@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="ackermann2actuator" type="measure_velocity_node.py" name="measure_velocity_node" output="screen">
+	</node>
+</launch>
