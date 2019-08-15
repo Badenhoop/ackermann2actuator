@@ -1,0 +1,18 @@
+//
+// Created by philipp on 15.08.19.
+//
+
+#ifndef ACKERMANN2ACTUATOR_TURNINGRADIUSEXPERIMENT_H
+#define ACKERMANN2ACTUATOR_TURNINGRADIUSEXPERIMENT_H
+
+namespace a2a
+{
+
+class TurningRadiusExperiment
+{
+
+};
+
+}
+
+#endif //ACKERMANN2ACTUATOR_TURNINGRADIUSEXPERIMENT_H
