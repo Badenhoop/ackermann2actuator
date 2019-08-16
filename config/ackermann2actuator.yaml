@@ -1,22 +1,16 @@
-# steering angle measuring params
-# -------------------------------
 steering_angle_measuring:
-  base_frame: "base_link"
 
-  servo_min: -1.0
-  servo_max: 1.0
-  servo_increment: 0.2
+  actuator_values: [-1.0, -0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8, 1.0]
+
+  base_frame: "base_link"
 
   motor_during_turn: 0.15
 
   scan_window: 30
   range_change_threshold: 0.3
 
-# velocity measuring params
-# -------------------------
 velocity_measuring:
-  motor_min: -0.3
-  motor_max: 0.3
-  motor_increment: 0.01
+
+  actuator_values: [-0.3, -0.25, -0.2, -0.15, 0.15, 0.2, 0.25, 0.3]
 
   measuring_distance: 2.0

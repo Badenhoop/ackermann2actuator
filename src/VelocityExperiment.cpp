@@ -7,6 +7,14 @@
 namespace a2a
 {
 
+void VelocityExperiment::startExperiment(double actuatorValue)
+{
 
+}
+
+void VelocityExperiment::stopExperiment()
+{
+
+}
 
 }

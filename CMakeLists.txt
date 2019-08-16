@@ -17,12 +17,15 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(SOURCE_FILES
-        include/ExperimentRunner.h
-        include/Measurement.h
+        include/Experiment.h
         include/TurningRadiusExperiment.h
         include/VelocityExperiment.h
-        src/TuringRadiusExperiment.cpp
+        include/Common.h
+        include/Csv.h
+        src/Experiment.cpp
+        src/TurningRadiusExperiment.cpp
         src/VelocityExperiment.cpp
+        src/Common.cpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -161,9 +164,8 @@ add_dependencies(measure_turning_radius_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
 add_dependencies(measure_velocity_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(measure_turning_radius_node ${catkin_LIBRARIES})
+target_link_libraries(measure_velocity_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
