@@ -17,4 +17,9 @@ void VelocityExperiment::stopExperiment()
 
 }
 
+void VelocityExperiment::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)
+{
+	
+}
+
 }

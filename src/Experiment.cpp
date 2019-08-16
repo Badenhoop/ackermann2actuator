@@ -17,6 +17,7 @@ Experiment::Experiment(std::string paramNamespace)
 {
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
+	laserScanSubscriber = nh.subscribe("scan", 10, &Experiment::laserScanCallback, this);
 }
 
 void Experiment::run()

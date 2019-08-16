@@ -81,66 +81,74 @@ public:
 		file.open(filename);
 
 		// read column names in first row
-		std::vector<Item> firstRow;
-		if (!(*this >> firstRow))
+		std::vector<std::string> firstRow;
+		readRow(firstRow);
+		if (firstRow.empty())
 			throw std::runtime_error{"Error: Empty .csv file."};
 
 		// find order mapping from read column names to given column names
 		for (std::size_t i = 0; i < columnNames.size(); ++i)
 		{
 			const auto & columnName = columnNames[i];
-			auto it = std::find_if(firstRow.begin(), firstRow.end(),
-			                       [&](const auto & item) { return item.getString() == columnName; });
+			auto it = std::find(firstRow.begin(), firstRow.end(), columnName);
 			if (it == firstRow.end())
 				throw std::runtime_error{"Error: Column not found: '" + columnName + "'."};
-			auto index = std::distance(firstRow.begin(), it);
-			order[index] = i;
+			auto columnIndex = std::distance(firstRow.begin(), it);
+			order[columnIndex] = i;
 		}
 	}
 
 	friend bool operator>>(IStream & stream, std::vector<Item> & items)
 	{
-		// TODO: implement quotation marks as escape character for item delimiter
-
+		std::vector<std::string> values;
+		stream.readRow(values);
+		if (values.empty())
+			return false;
 		items.resize(stream.order.size());
+		for (std::size_t i = 0; i < items.size(); ++i)
+		{
+			if (stream.order.find(i) != stream.order.end())
+				items[stream.order[i]] = values[i];
+		}
+		return true;
+	}
+
+private:
+	std::ifstream file;
+	std::unordered_map<std::size_t, std::size_t> order;
+
+	void readRow(std::vector<std::string> & values)
+	{
+		// TODO: implement quotation marks as escape character for value delimiter
 		std::string line;
 
 		// ignore empty lines
-		while (std::getline(stream.file, line))
+		while (std::getline(file, line))
 		{
 			boost::trim(line);
 			if (!line.empty())
 				break;
 		}
 
-		std::string item;
+		std::string value;
 		std::istringstream iss{line};
 		std::size_t i = 0;
-		while (std::getline(iss, item, ','))
+		while (std::getline(iss, value, ','))
 		{
-			boost::trim(item);
+			boost::trim(value);
 
 			// remove quotation marks
-			if (*(item.begin()) == '"')
-				if (*(item.rbegin()) == '"')
-					item = item.substr(1, item.length() - 2);
+			if (*(value.begin()) == '"')
+				if (*(value.rbegin()) == '"')
+					value = value.substr(1, value.length() - 2);
 				else
-					item = item.substr(1, item.length() - 1);
-			else if (*(item.rbegin()) == '"')
-				item = item.substr(0, item.length() - 1);
+					value = value.substr(1, value.length() - 1);
+			else if (*(value.rbegin()) == '"')
+				value = value.substr(0, value.length() - 1);
 
-			// place the item at the correct position
-			if (stream.order.find(i) != stream.order.end())
-				items[stream.order[i]] = Item{item, Type::UNSPECIFIED};
-
-			++i;
+			values.push_back(value);
 		}
-		return i != 0;
 	}
-
-private:
-	std::ifstream file;
-	std::unordered_map<std::size_t, std::size_t> order;
 };
 
 class OStream

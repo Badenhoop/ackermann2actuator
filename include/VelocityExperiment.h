@@ -20,6 +20,8 @@ protected:
 	void startExperiment(double actuatorValue) override;
 
 	void stopExperiment() override;
+
+	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg) override;
 };
 
 }

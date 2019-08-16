@@ -17,4 +17,9 @@ void TurningRadiusExperiment::stopExperiment()
 
 }
 
+void TurningRadiusExperiment::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)
+{
+	
+}
+
 }

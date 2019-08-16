@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include <ros/ros.h>
+#include <sensor_msgs/LaserScan.h>
 
 namespace a2a
 {
@@ -28,7 +29,8 @@ public:
 	void cancel();
 
 private:
-	using MeasurementSeries = std::unordered_map<double, double>;
+	// maps from actuator value to measurement
+	using MeasurementSeries = std::map<double, double>;
 
 	static const std::vector<std::string> csvColumnNames;
 
@@ -46,10 +48,13 @@ protected:
 	ros::NodeHandle nh;
 	ros::Publisher velocityActuatorPublisher;
 	ros::Publisher steeringActuatorPublisher;
+	ros::Subscriber laserScanSubscriber;
 
 	virtual void startExperiment(double actuatorValue) = 0;
 
 	virtual void stopExperiment() = 0;
+
+	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan) = 0;
 };
 
 class ExperimentCancellation : public std::exception
