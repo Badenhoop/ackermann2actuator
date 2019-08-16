@@ -14,10 +14,12 @@ const std::vector<std::string> MeasuringProcess::csvColumnNames = {"actuator_val
 
 MeasuringProcess::MeasuringProcess(std::string paramNamespace)
 	: paramNamespace(std::move(paramNamespace))
+	, filterChain("sensor_msgs::LaserScan")
 {
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
 	laserScanSubscriber = nh.subscribe("scan", 10, &MeasuringProcess::laserScanCallback, this);
+	filterChain.configure("~" + paramNamespace);
 }
 
 void MeasuringProcess::run()
@@ -67,6 +69,7 @@ void MeasuringProcess::run()
 		{
 			auto measurement = measurementFuture.get();
 			measurements[actuatorValue] = measurement;
+			std::cout << "Measuring process for actuator value " << actuatorValue << " finished.\n";
 		}
 		catch (const ExperimentCancellation & )
 		{

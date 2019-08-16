@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include "filters/filter_chain.h"
 
 namespace a2a
 {
@@ -49,6 +50,7 @@ protected:
 	ros::Publisher velocityActuatorPublisher;
 	ros::Publisher steeringActuatorPublisher;
 	ros::Subscriber laserScanSubscriber;
+	filters::FilterChain<sensor_msgs::LaserScan> filterChain;
 
 	virtual void startMeasuring(double actuatorValue) = 0;
 
