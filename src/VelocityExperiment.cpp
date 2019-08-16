@@ -9,7 +9,7 @@ namespace a2a
 
 void VelocityExperiment::startExperiment(double actuatorValue)
 {
-
+	measurementPromise.set_value(0.0);
 }
 
 void VelocityExperiment::stopExperiment()

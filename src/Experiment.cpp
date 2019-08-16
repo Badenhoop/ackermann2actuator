@@ -15,7 +15,8 @@ const std::vector<std::string> Experiment::csvColumnNames = {"actuator_value", "
 Experiment::Experiment(std::string paramNamespace)
 	: paramNamespace(std::move(paramNamespace))
 {
-	actuatorValuePublisher = nh.advertise<std_msgs::Float64>("actuator", 1);
+	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
+	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
 }
 
 void Experiment::run()
@@ -41,6 +42,8 @@ void Experiment::run()
 		{
 			std::cout << "Starting new experiment with actuator value " << actuatorValue << ".\n";
 		}
+
+		std::cout << "(y)es / (n)o / (q)uit\n";
 
 		std::string input;
 		while (input != "y" && input != "n" && input != "q" && running)
@@ -87,18 +90,18 @@ void Experiment::cancel()
 
 void Experiment::loadActuatorValues(std::vector<double> & actuatorValues)
 {
-	ros::param::get("" + paramNamespace + "/actuator_values", actuatorValues);
+	ros::param::get("~" + paramNamespace + "/actuator_values", actuatorValues);
 }
 
 void Experiment::loadMeasurementSeries(MeasurementSeries & measurements)
 {
-	const std::string param{"input_measurement_series"};
+	const std::string param{"~input_measurement_series"};
 	std::string filename;
 
 	if (!ros::param::has(param))
 		return;
 
-	ros::param::get("input_measurement_series", filename);
+	ros::param::get(param, filename);
 	csv::IStream stream{filename, csvColumnNames};
 	std::vector<csv::Item> items;
 	while (stream >> items)
@@ -112,7 +115,7 @@ void Experiment::loadMeasurementSeries(MeasurementSeries & measurements)
 void Experiment::safeMeasurementSeries(const Experiment::MeasurementSeries & measurements)
 {
 	std::string filename;
-	ros::param::get("output_measurement_series", filename);
+	ros::param::get("~output_measurement_series", filename);
 	csv::OStream stream{filename, csvColumnNames};
 	for (const auto & pair : measurements)
 	{

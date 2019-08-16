@@ -44,7 +44,8 @@ private:
 protected:
 	std::promise<double> measurementPromise;
 	ros::NodeHandle nh;
-	ros::Publisher actuatorValuePublisher;
+	ros::Publisher velocityActuatorPublisher;
+	ros::Publisher steeringActuatorPublisher;
 
 	virtual void startExperiment(double actuatorValue) = 0;
 
