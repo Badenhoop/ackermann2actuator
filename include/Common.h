@@ -22,7 +22,7 @@ void sigIntHandler(int sig);
 
 void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
 
-template<typename Experiment>
+template<typename MeasuringProcess>
 void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 {
 	// Override SIGINT handler
@@ -33,13 +33,13 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	ros::XMLRPCManager::instance()->unbind("shutdown");
 	ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
 
-	Experiment experiment{};
-	std::thread experimentThread{[&]{ experiment.run(); }};
+	MeasuringProcess process{};
+	std::thread experimentThread{[&]{ process.run(); }};
 
-	while (experiment.isRunning() && !requestShutdownFlag)
+	while (process.isRunning() && !requestShutdownFlag)
 		ros::spinOnce();
 
-	experiment.cancel();
+	process.cancel();
 	experimentThread.join();
 
 	ros::shutdown();

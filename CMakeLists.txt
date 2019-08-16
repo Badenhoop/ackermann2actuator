@@ -17,14 +17,14 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 set(SOURCE_FILES
-        include/Experiment.h
-        include/TurningRadiusExperiment.h
-        include/VelocityExperiment.h
+        include/MeasuringProcess.h
+        include/TurningRadiusMeasuringProcess.h
+        include/VelocityMeasuringProcess.h
         include/Common.h
         include/Csv.h
-        src/Experiment.cpp
-        src/TurningRadiusExperiment.cpp
-        src/VelocityExperiment.cpp
+        src/MeasuringProcess.cpp
+        src/TurningRadiusMeasuringProcess.cpp
+        src/VelocityMeasuringProcess.cpp
         src/Common.cpp
 )
 
@@ -148,8 +148,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(measure_turning_radius_node ${SOURCE_FILES} src/MeasureTurningRadiusNode.cpp)
-add_executable(measure_velocity_node ${SOURCE_FILES} src/MeasureVelocityNode.cpp)
+add_executable(turning_radius_measuring_node ${SOURCE_FILES} src/TurningRadiusMeasuringNode.cpp)
+add_executable(velocity_measuring_node ${SOURCE_FILES} src/VelocityMeasuringNode.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -159,12 +159,12 @@ add_executable(measure_velocity_node ${SOURCE_FILES} src/MeasureVelocityNode.cpp
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(measure_turning_radius_node ${measure_turning_radius_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(measure_velocity_node ${measure_velocity_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(turning_radius_measuring_node ${turning_radius_measuring_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(velocity_measuring_node ${velocity_measuring_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(measure_turning_radius_node ${catkin_LIBRARIES})
-target_link_libraries(measure_velocity_node ${catkin_LIBRARIES})
+target_link_libraries(turning_radius_measuring_node ${catkin_LIBRARIES})
+target_link_libraries(velocity_measuring_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##

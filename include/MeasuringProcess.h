@@ -2,8 +2,8 @@
 // Created by philipp on 16.08.19.
 //
 
-#ifndef ACKERMANN2ACTUATOR_EXPERIMENT_H
-#define ACKERMANN2ACTUATOR_EXPERIMENT_H
+#ifndef ACKERMANN2ACTUATOR_MEASURINGPROCESS_H
+#define ACKERMANN2ACTUATOR_MEASURINGPROCESS_H
 
 #include <future>
 #include <vector>
@@ -14,12 +14,12 @@
 namespace a2a
 {
 
-class Experiment
+class MeasuringProcess
 {
 public:
-	explicit Experiment(std::string paramNamespace);
+	explicit MeasuringProcess(std::string paramNamespace);
 
-	virtual ~Experiment() = default;
+	virtual ~MeasuringProcess() = default;
 
 	void run();
 
@@ -50,9 +50,9 @@ protected:
 	ros::Publisher steeringActuatorPublisher;
 	ros::Subscriber laserScanSubscriber;
 
-	virtual void startExperiment(double actuatorValue) = 0;
+	virtual void startMeasuring(double actuatorValue) = 0;
 
-	virtual void stopExperiment() = 0;
+	virtual void stopMeasuring() = 0;
 
 	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan) = 0;
 };
@@ -63,4 +63,4 @@ class ExperimentCancellation : public std::exception
 
 }
 
-#endif //ACKERMANN2ACTUATOR_EXPERIMENT_H
+#endif //ACKERMANN2ACTUATOR_MEASURINGPROCESS_H

@@ -2,7 +2,7 @@
 // Created by philipp on 16.08.19.
 //
 
-#include "../include/Experiment.h"
+#include "../include/MeasuringProcess.h"
 #include "../include/Csv.h"
 #include <iostream>
 #include <std_msgs/Float64.h>
@@ -10,17 +10,17 @@
 namespace a2a
 {
 
-const std::vector<std::string> Experiment::csvColumnNames = {"actuator_value", "measurement"};
+const std::vector<std::string> MeasuringProcess::csvColumnNames = {"actuator_value", "measurement"};
 
-Experiment::Experiment(std::string paramNamespace)
+MeasuringProcess::MeasuringProcess(std::string paramNamespace)
 	: paramNamespace(std::move(paramNamespace))
 {
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
-	laserScanSubscriber = nh.subscribe("scan", 10, &Experiment::laserScanCallback, this);
+	laserScanSubscriber = nh.subscribe("scan", 10, &MeasuringProcess::laserScanCallback, this);
 }
 
-void Experiment::run()
+void MeasuringProcess::run()
 {
 	running = true;
 
@@ -37,7 +37,7 @@ void Experiment::run()
 		if (measurements.find(actuatorValue) != measurements.end())
 		{
 			std::cout << "Actuator value " << actuatorValue << " has already been measured.\n"
-					  << "Starting a new experiment will overwrite it.\n";
+					  << "Starting a new measuring process will overwrite it.\n";
 		}
 		else
 		{
@@ -62,7 +62,7 @@ void Experiment::run()
 
 		measurementPromise = std::promise<double>{};
 		auto measurementFuture = measurementPromise.get_future();
-		startExperiment(actuatorValue);
+		startMeasuring(actuatorValue);
 		try
 		{
 			auto measurement = measurementFuture.get();
@@ -77,24 +77,24 @@ void Experiment::run()
 	safeMeasurementSeries(measurements);
 }
 
-void Experiment::cancel()
+void MeasuringProcess::cancel()
 {
 	running = false;
 	try
 	{
-		stopExperiment();
+		stopMeasuring();
 		measurementPromise.set_exception(std::make_exception_ptr(ExperimentCancellation{}));
 	}
 	catch (const std::future_error & e)
 	{}
 }
 
-void Experiment::loadActuatorValues(std::vector<double> & actuatorValues)
+void MeasuringProcess::loadActuatorValues(std::vector<double> & actuatorValues)
 {
 	ros::param::get("~" + paramNamespace + "/actuator_values", actuatorValues);
 }
 
-void Experiment::loadMeasurementSeries(MeasurementSeries & measurements)
+void MeasuringProcess::loadMeasurementSeries(MeasurementSeries & measurements)
 {
 	const std::string param{"~input_measurement_series"};
 	std::string filename;
@@ -113,7 +113,7 @@ void Experiment::loadMeasurementSeries(MeasurementSeries & measurements)
 	}
 }
 
-void Experiment::safeMeasurementSeries(const Experiment::MeasurementSeries & measurements)
+void MeasuringProcess::safeMeasurementSeries(const MeasuringProcess::MeasurementSeries & measurements)
 {
 	std::string filename;
 	ros::param::get("~output_measurement_series", filename);
