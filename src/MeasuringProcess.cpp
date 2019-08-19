@@ -62,34 +62,40 @@ void MeasuringProcess::run()
 			continue;
 		}
 
-		measurementPromise = std::promise<double>{};
-		auto measurementFuture = measurementPromise.get_future();
+		std::unique_lock<std::mutex> lock{measuringMutex};
+		measuringState = MeasuringState::MEASURING;
+		lock.unlock();
+
 		startMeasuring(actuatorValue);
-		try
+
+		lock.lock();
+		while (measuringState == MeasuringState::MEASURING)
 		{
-			auto measurement = measurementFuture.get();
-			measurements[actuatorValue] = measurement;
-			std::cout << "Measuring process for actuator value " << actuatorValue << " finished.\n";
+			measuringCondition.wait(lock);
 		}
-		catch (const ExperimentCancellation & )
+
+		if (measuringState == MeasuringState::INTERRUPTED)
 		{
+			running = false;
 			break;
 		}
+
+		measurements[actuatorValue] = measuringResult;
+		std::cout << "Measuring process for actuator value " << actuatorValue << " finished.\n";
 	}
 
-	safeMeasurementSeries(measurements);
+	saveMeasurementSeries(measurements);
 }
 
 void MeasuringProcess::cancel()
 {
 	running = false;
-	try
-	{
-		stopMeasuring();
-		measurementPromise.set_exception(std::make_exception_ptr(ExperimentCancellation{}));
-	}
-	catch (const std::future_error & e)
-	{}
+
+	std::unique_lock<std::mutex> lock{measuringMutex};
+	measuringState = MeasuringState::INTERRUPTED;
+	measuringCondition.notify_all();
+
+	stopMeasuring();
 }
 
 void MeasuringProcess::loadActuatorValues(std::vector<double> & actuatorValues)
@@ -116,7 +122,7 @@ void MeasuringProcess::loadMeasurementSeries(MeasurementSeries & measurements)
 	}
 }
 
-void MeasuringProcess::safeMeasurementSeries(const MeasuringProcess::MeasurementSeries & measurements)
+void MeasuringProcess::saveMeasurementSeries(const MeasuringProcess::MeasurementSeries & measurements)
 {
 	std::string filename;
 	ros::param::get("~output_measurement_series", filename);

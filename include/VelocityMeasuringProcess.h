@@ -16,7 +16,12 @@ public:
 	VelocityMeasuringProcess() : MeasuringProcess("velocity_measuring")
 	{}
 
-protected:
+private:
+	double startDistance;
+	ros::Time startTime;
+	double accelerationDistance;
+	double measuringDistance;
+
 	void startMeasuring(double actuatorValue) override;
 
 	void stopMeasuring() override;

@@ -16,7 +16,7 @@ public:
 	TurningRadiusMeasuringProcess() : MeasuringProcess("turning_radius_measuring")
 	{}
 
-protected:
+private:
 	void startMeasuring(double actuatorValue) override;
 
 	void stopMeasuring() override;
