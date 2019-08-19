@@ -25,6 +25,8 @@ void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result);
 template<typename MeasuringProcess>
 void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 {
+	using namespace std::chrono_literals;
+
 	// Override SIGINT handler
 	ros::init(argc, argv, nodeName, ros::init_options::NoSigintHandler);
 	signal(SIGINT, sigIntHandler);
@@ -33,15 +35,26 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	ros::XMLRPCManager::instance()->unbind("shutdown");
 	ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
 
-	MeasuringProcess process{};
-	std::thread experimentThread{[&]{ process.run(); }};
+	ros::AsyncSpinner spinner{1};
+	spinner.start();
 
-	while (process.isRunning() && !requestShutdownFlag)
-		ros::spinOnce();
+	MeasuringProcess measuringProcess{};
 
-	process.cancel();
-	experimentThread.join();
+	std::thread signalThread{[&]
+	{
+		while (requestShutdownFlag)
+		{
+			std::this_thread::sleep_for(100ms);
+		}
+		measuringProcess.cancel();
+	}};
 
+	measuringProcess.run();
+
+	// after completion wait for possible pending handlers to finish
+	std::this_thread::sleep_for(2s);
+
+	spinner.stop();
 	ros::shutdown();
 }
 

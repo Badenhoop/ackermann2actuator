@@ -14,7 +14,7 @@ void TurningRadiusMeasuringProcess::startMeasuring(double actuatorValue)
 
 void TurningRadiusMeasuringProcess::stopMeasuring()
 {
-
+	MeasuringProcess::stopMeasuring();
 }
 
 void TurningRadiusMeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)

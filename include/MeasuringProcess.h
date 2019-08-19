@@ -54,7 +54,7 @@ protected:
 
 	virtual void startMeasuring(double actuatorValue) = 0;
 
-	virtual void stopMeasuring() = 0;
+	virtual void stopMeasuring();
 
 	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan) = 0;
 };

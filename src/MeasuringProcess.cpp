@@ -129,4 +129,12 @@ void MeasuringProcess::safeMeasurementSeries(const MeasuringProcess::Measurement
 	}
 }
 
+void MeasuringProcess::stopMeasuring()
+{
+	std_msgs::Float64 msg;
+	msg.data = 0.0;
+	velocityActuatorPublisher.publish(msg);
+	steeringActuatorPublisher.publish(msg);
+}
+
 }
