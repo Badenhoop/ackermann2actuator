@@ -17,16 +17,31 @@ public:
 	{}
 
 private:
-	double startDistance;
-	ros::Time startTime;
+	double velocityActuatorValue;
 	double accelerationDistance;
 	double measuringDistance;
 
-	void startMeasuring(double actuatorValue) override;
+	double startDistance;
+	ros::Time startTime;
 
-	void stopMeasuring() override;
+	enum class DriveMode
+	{
+		FORWARD, BACKWARD
+	};
+
+	DriveMode driveMode;
+
+	std::function<void(const sensor_msgs::LaserScan &)> state;
+
+	void startMeasuring(float actuatorValue) override;
 
 	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg) override;
+
+	void scanningDistanceState(const sensor_msgs::LaserScan &);
+
+	void accelerationState(const sensor_msgs::LaserScan & scan);
+
+	void measureState(const sensor_msgs::LaserScan & scan);
 };
 
 }

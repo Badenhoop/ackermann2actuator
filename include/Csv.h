@@ -56,6 +56,18 @@ public:
 		}
 	}
 
+	float getFloat() const
+	{
+		try
+		{
+			return std::stof(data);
+		}
+		catch (const std::invalid_argument & e)
+		{
+			throw std::runtime_error{"Error: Data cannot be converted to float"};
+		}
+	}
+
 	bool getBool() const
 	{
 		if (data == "true" || data == "1")

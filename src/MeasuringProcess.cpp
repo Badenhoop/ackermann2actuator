@@ -26,7 +26,7 @@ void MeasuringProcess::run()
 {
 	running = true;
 
-	std::vector<double> actuatorValues;
+	std::vector<float> actuatorValues;
 	MeasurementSeries measurements;
 
 	loadActuatorValues(actuatorValues);
@@ -64,11 +64,8 @@ void MeasuringProcess::run()
 
 		std::unique_lock<std::mutex> lock{measuringMutex};
 		measuringState = MeasuringState::MEASURING;
-		lock.unlock();
-
 		startMeasuring(actuatorValue);
 
-		lock.lock();
 		while (measuringState == MeasuringState::MEASURING)
 		{
 			measuringCondition.wait(lock);
@@ -92,13 +89,15 @@ void MeasuringProcess::cancel()
 	running = false;
 
 	std::unique_lock<std::mutex> lock{measuringMutex};
-	measuringState = MeasuringState::INTERRUPTED;
-	measuringCondition.notify_all();
-
-	stopMeasuring();
+	if (measuringState == MeasuringState::MEASURING)
+	{
+		measuringState = MeasuringState::INTERRUPTED;
+		measuringCondition.notify_all();
+		stopMeasuring();
+	}
 }
 
-void MeasuringProcess::loadActuatorValues(std::vector<double> & actuatorValues)
+void MeasuringProcess::loadActuatorValues(std::vector<float> & actuatorValues)
 {
 	ros::param::get("~" + paramNamespace + "/actuator_values", actuatorValues);
 }

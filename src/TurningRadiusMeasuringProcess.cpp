@@ -7,7 +7,7 @@
 namespace a2a
 {
 
-void TurningRadiusMeasuringProcess::startMeasuring(double actuatorValue)
+void TurningRadiusMeasuringProcess::startMeasuring(float actuatorValue)
 {
 	// keep steering angle neutral
 	std_msgs::Float64 msg;
@@ -17,11 +17,6 @@ void TurningRadiusMeasuringProcess::startMeasuring(double actuatorValue)
 	// start driving
 	msg.data = actuatorValue;
 	velocityActuatorPublisher.publish(msg);
-}
-
-void TurningRadiusMeasuringProcess::stopMeasuring()
-{
-	MeasuringProcess::stopMeasuring();
 }
 
 void TurningRadiusMeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)

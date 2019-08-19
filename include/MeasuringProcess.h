@@ -33,11 +33,11 @@ public:
 
 private:
 	// maps from actuator value to measurement
-	using MeasurementSeries = std::map<double, double>;
+	using MeasurementSeries = std::map<float, double>;
 
 	static const std::vector<std::string> csvColumnNames;
 
-	void loadActuatorValues(std::vector<double> & actuatorValues);
+	void loadActuatorValues(std::vector<float> & actuatorValues);
 
 	void loadMeasurementSeries(MeasurementSeries & measurements);
 
@@ -53,8 +53,9 @@ protected:
 	{
 		MEASURING, INTERRUPTED, FINISHED
 	};
+
 	MeasuringState measuringState{MeasuringState::FINISHED};
-	double measuringResult;
+	float measuringResult;
 	std::mutex measuringMutex;
 	std::condition_variable measuringCondition;
 
@@ -64,7 +65,7 @@ protected:
 	ros::Subscriber laserScanSubscriber;
 	filters::FilterChain<sensor_msgs::LaserScan> filterChain;
 
-	virtual void startMeasuring(double actuatorValue) = 0;
+	virtual void startMeasuring(float actuatorValue) = 0;
 
 	virtual void stopMeasuring();
 

@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <ros/xmlrpc_manager.h>
 #include <thread>
+#include <sensor_msgs/LaserScan.h>
 
 // See https://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
 // for shutdown and SIGINT handling.
@@ -57,6 +58,8 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	spinner.stop();
 	ros::shutdown();
 }
+
+float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
 
 }
 

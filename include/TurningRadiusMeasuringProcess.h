@@ -17,9 +17,7 @@ public:
 	{}
 
 private:
-	void startMeasuring(double actuatorValue) override;
-
-	void stopMeasuring() override;
+	void startMeasuring(float actuatorValue) override;
 
 	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg) override;
 };
