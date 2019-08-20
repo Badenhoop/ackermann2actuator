@@ -66,6 +66,8 @@ void MeasuringProcess::run()
 		measuringState = MeasuringState::MEASURING;
 		startMeasuring(actuatorValue);
 
+		ROS_DEBUG_STREAM("waiting");
+
 		while (measuringState == MeasuringState::MEASURING)
 		{
 			measuringCondition.wait(lock);

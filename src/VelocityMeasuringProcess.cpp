@@ -62,6 +62,8 @@ void VelocityMeasuringProcess::accelerationState(const sensor_msgs::LaserScan & 
 {
 	float distanceToWall = getDistanceFromScan(scan);
 	float travelledDistance = std::abs(startDistance - distanceToWall);
+	ROS_DEBUG_STREAM("distance to wall: " << distanceToWall);
+	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
 	if (travelledDistance >= accelerationDistance)
 	{
 		startTime = ros::Time::now();
@@ -75,6 +77,8 @@ void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 {
 	float distanceToWall = getDistanceFromScan(scan);
 	float travelledDistance = std::abs(startDistance - distanceToWall);
+	ROS_DEBUG_STREAM("distance to wall: " << distanceToWall);
+	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
 	if (travelledDistance >= measuringDistance)
 	{
 		auto deltaTime = ros::Time::now() - startTime;

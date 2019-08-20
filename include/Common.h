@@ -10,6 +10,7 @@
 #include <ros/xmlrpc_manager.h>
 #include <thread>
 #include <sensor_msgs/LaserScan.h>
+#include <ros/console.h>
 
 // See https://answers.ros.org/question/27655/what-is-the-correct-way-to-do-stuff-before-a-node-is-shutdown/
 // for shutdown and SIGINT handling.
@@ -35,6 +36,10 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	// Override XMLRPC shutdown
 	ros::XMLRPCManager::instance()->unbind("shutdown");
 	ros::XMLRPCManager::instance()->bind("shutdown", shutdownCallback);
+
+	// set log level
+	if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) )
+		ros::console::notifyLoggerLevelsChanged();
 
 	ros::AsyncSpinner spinner{1};
 	spinner.start();

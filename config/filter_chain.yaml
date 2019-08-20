@@ -11,8 +11,8 @@ turning_radius_measuring:
         use_message_range_limits: false
         lower_threshold: 0.3
         upper_threshold: 0.4
-        lower_replacement_value: -.inf
         upper_replacement_value: .inf
+        lower_replacement_value: -.inf
 
 velocity_measuring:
   scan_filter_chain:
