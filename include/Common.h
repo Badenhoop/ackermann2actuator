@@ -49,10 +49,10 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	std::thread signalThread{[&]
 	{
 		while (requestShutdownFlag)
-		{
 			std::this_thread::sleep_for(100ms);
-		}
-		measuringProcess.cancel();
+
+		if (measuringProcess.isRunning())
+			measuringProcess.cancel();
 	}};
 
 	measuringProcess.run();
@@ -62,6 +62,9 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 
 	spinner.stop();
 	ros::shutdown();
+
+	requestShutdownFlag = 1;
+	signalThread.join();
 }
 
 float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
