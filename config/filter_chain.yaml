@@ -14,18 +14,17 @@ turning_radius_measuring:
         upper_replacement_value: .inf
         lower_replacement_value: -.inf
 
-velocity_measuring:
-  scan_filter_chain:
-    - name: window_filter
-      type: laser_filters/LaserScanAngularBoundsFilter
-      params:
-        lower_angle: -0.785 # -pi / 4
-        upper_angle: 0.785 # pi / 4
-    - type: laser_filters/LaserArrayFilter
-      name: laser_median_filter
-      params:
-        range_filter_chain:
-          - name: range_median_filter
-            type: filters/MultiChannelMedianFilterFloat
-            params:
-              number_of_observations: 5
+velocity_measuring_filter_chain:
+  - name: window_filter
+    type: laser_filters/LaserScanAngularBoundsFilter
+    params:
+      lower_angle: -0.785 # -pi / 4
+      upper_angle: 0.785 # pi / 4
+  - name: array_filter
+    type: laser_filters/LaserArrayFilter
+    params:
+      range_filter_chain:
+        - name: range_median_filter
+          type: filters/MultiChannelMedianFilterFloat
+          params:
+            number_of_observations: 5

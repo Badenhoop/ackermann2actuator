@@ -1,0 +1,4 @@
+- git:
+    local-name: src/laser_filters
+    version: indigo-devel
+    uri: 'https://github.com/ros-perception/laser_filters.git'

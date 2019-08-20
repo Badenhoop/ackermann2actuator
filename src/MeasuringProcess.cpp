@@ -19,7 +19,7 @@ MeasuringProcess::MeasuringProcess(std::string paramNamespace)
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
 	laserScanSubscriber = nh.subscribe("scan", 10, &MeasuringProcess::laserScanCallback, this);
-	filterChain.configure("~" + paramNamespace);
+	filterChain.configure(this->paramNamespace + "_filter_chain");
 }
 
 void MeasuringProcess::run()
