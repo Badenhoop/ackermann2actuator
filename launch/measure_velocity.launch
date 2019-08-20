@@ -1,9 +1,0 @@
-<launch>
-	<rosparam file="$(find ackermann2actuator)/config/filter_chain.yaml" command="load" />
-	<node pkg="ackermann2actuator" type="velocity_measuring_node" name="velocity_measuring_node" output="screen">
-	    <rosparam file="$(find ackermann2actuator)/config/ackermann2actuator.yaml" command="load" />
-	    <param name="output_measurement_series" value="/home/philipp/tmp/measurements/test.csv" />
-	    <remap from="velocity_actuator" to="motor" />
-	    <remap from="steering_actuator" to="servo" />
-	</node>
-</launch>
