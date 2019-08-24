@@ -32,9 +32,6 @@ void MeasuringProcess::run()
 	loadActuatorValues(actuatorValues);
 	loadMeasurementSeries(measurements);
 
-	//ROS_DEBUG_STREAM("actuatorValues.size(): " << actuatorValues.size());
-	//ROS_DEBUG_STREAM("running: " << running);
-
 	for (std::size_t i = 0; i < actuatorValues.size() && running; ++i)
 	{
 		auto actuatorValue = actuatorValues[i];
