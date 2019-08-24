@@ -27,10 +27,11 @@ void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 	ROS_DEBUG_STREAM("Start scanning distance...");
 	state = [&] (auto && ... args) { this->scanningDistanceState(args...); };
 
-	// keep steering angle neutral
+	// keep steering angle and velocity neutral
 	std_msgs::Float64 msg;
 	msg.data = 0.0;
 	steeringActuatorPublisher.publish(msg);
+	velocityActuatorPublisher.publish(msg);
 }
 
 void VelocityMeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)
