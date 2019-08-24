@@ -48,7 +48,7 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 
 	std::thread signalThread{[&]
 	{
-		while (requestShutdownFlag)
+		while (!requestShutdownFlag)
 			std::this_thread::sleep_for(100ms);
 
 		if (measuringProcess.isRunning())
