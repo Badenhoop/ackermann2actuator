@@ -11,7 +11,7 @@ turning_radius_measuring:
 
 velocity_measuring:
 
-  actuator_values: [-0.3, -0.25, -0.2, -0.15, 0.15, 0.2, 0.25, 0.3]
+  actuator_values: [0.15]
 
   measuring_distance: 2.0
   acceleration_distance: 1.0
