@@ -10,8 +10,11 @@ namespace a2a
 
 void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 {
-	ros::param::get(paramNamespace + "/acceleration_distance", measuringDistance);
+	ros::param::get(paramNamespace + "/acceleration_distance", accelerationDistance);
 	ros::param::get(paramNamespace + "/measuring_distance", measuringDistance);
+
+	ROS_DEBUG_STREAM("acceleration distance: " << accelerationDistance);
+	ROS_DEBUG_STREAM("measuring distance: " << measuringDistance);
 
 	velocityActuatorValue = actuatorValue;
 	startTime = ros::Time::now();
@@ -21,6 +24,7 @@ void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 	else
 		driveMode = DriveMode::BACKWARD;
 
+	ROS_DEBUG_STREAM("Start scanning distance...");
 	state = [&] (auto && ... args) { this->scanningDistanceState(args...); };
 
 	// keep steering angle neutral
@@ -54,6 +58,7 @@ void VelocityMeasuringProcess::scanningDistanceState(const sensor_msgs::LaserSca
 		msg.data = velocityActuatorValue;
 		velocityActuatorPublisher.publish(msg);
 
+		ROS_DEBUG_STREAM("Start accelerating...");
 		state = [&] (auto && ... args) { this->accelerationState(args...); };
 	}
 }
@@ -69,6 +74,7 @@ void VelocityMeasuringProcess::accelerationState(const sensor_msgs::LaserScan & 
 		startTime = ros::Time::now();
 		startDistance = distanceToWall;
 
+		ROS_DEBUG_STREAM("Start measuring...");
 		state = [&] (auto && ... args) { this->measureState(args...); };
 	}
 }
@@ -84,6 +90,8 @@ void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 		auto deltaTime = ros::Time::now() - startTime;
 		// v = s / t
 		measuringResult = travelledDistance / deltaTime.toSec();
+		ROS_DEBUG_STREAM("Finished measuring speed.");
+		ROS_DEBUG_STREAM("Measured speed: " << measuringResult);
 		measuringState = MeasuringState::FINISHED;
 		measuringCondition.notify_all();
 		stopMeasuring();
