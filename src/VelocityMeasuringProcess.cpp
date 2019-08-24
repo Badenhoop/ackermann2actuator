@@ -10,8 +10,8 @@ namespace a2a
 
 void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 {
-	ros::param::get(paramNamespace + "/acceleration_distance", accelerationDistance);
-	ros::param::get(paramNamespace + "/measuring_distance", measuringDistance);
+	ros::param::get("~" + paramNamespace + "/acceleration_distance", accelerationDistance);
+	ros::param::get("~" + paramNamespace + "/measuring_distance", measuringDistance);
 
 	ROS_DEBUG_STREAM("acceleration distance: " << accelerationDistance);
 	ROS_DEBUG_STREAM("measuring distance: " << measuringDistance);
