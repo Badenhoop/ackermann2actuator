@@ -14,16 +14,16 @@ namespace a2a
 class LaserScanMinRangeWindowFilter : public filters::FilterBase<sensor_msgs::LaserScan>
 {
 public:
-	virtual ~LaserScanMinRangeWindowFilter() {}
+	virtual ~LaserScanMinRangeWindowFilter() = default;
 
-	bool configure();
+	bool configure() override;
 
-	bool update(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & filteredScan);
+	bool update(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & filteredScan) override;
 
 private:
-	float windowAngle;
-	float changeInRangeThreshold;
-	float replacementValue;
+	double windowAngle;
+	double changeInRangeThreshold;
+	double replacementValue;
 };
 
 }

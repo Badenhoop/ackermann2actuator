@@ -26,8 +26,8 @@ private:
 
 	struct Measurement
 	{
-		ros::Time time;
 		float distance;
+		ros::Time startScanTime;
 	};
 
 	std::vector<Measurement> measurements;

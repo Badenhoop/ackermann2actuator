@@ -66,9 +66,8 @@ void VelocityMeasuringProcess::accelerationState(const sensor_msgs::LaserScan & 
 
 void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 {
-	auto now = ros::Time::now();
 	auto scannedDistances = getDistanceFromScan(scan);
-	measurements.emplace_back(Measurement{now, scannedDistances});
+	measurements.emplace_back(Measurement{scannedDistances, scan.header.stamp});
 	float travelledDistance = std::abs(startDistance - scannedDistances);
 	ROS_DEBUG_STREAM("scanned distance: " << scannedDistances);
 	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
@@ -89,8 +88,8 @@ float VelocityMeasuringProcess::computeVelocity() const
 	double velocity = 0;
 	for (std::size_t i = 1; i < measurements.size(); ++i)
 	{
-		double deltaTime = std::abs(measurements[i].time.toSec() - measurements[i - 1].time.toSec());
 		double distance = std::abs(measurements[i].distance - measurements[i - 1].distance);
+		double deltaTime = std::abs(measurements[i].startScanTime.toSec() - measurements[i - 1].startScanTime.toSec());
 		velocity += distance / deltaTime;
 	}
 	return velocity / (measurements.size() - 1);
