@@ -35,6 +35,18 @@ private:
 	// maps from actuator value to measurement
 	using MeasurementSeries = std::map<float, double>;
 
+	// Synchronized access on measurement result.
+	// Unfortunately, std::promise isn't enough here.
+	enum class ProcessState
+	{
+		MEASURING, INTERRUPTED, FINISHED
+	};
+
+	ProcessState processState{ProcessState::FINISHED};
+	float measuringResult;
+	std::mutex measuringMutex;
+	std::condition_variable measuringCondition;
+
 	static const std::vector<std::string> csvColumnNames;
 
 	void loadActuatorValues(std::vector<float> & actuatorValues);
@@ -43,21 +55,12 @@ private:
 
 	void saveMeasurementSeries(const MeasurementSeries & measurements);
 
+	void stop();
+
 protected:
 	std::atomic<bool> running{false};
 	std::string paramNamespace;
-
-	// Synchronized access on measurement result.
-	// Unfortunately, std::promise isn't enough here.
-	enum class MeasuringState
-	{
-		MEASURING, INTERRUPTED, FINISHED
-	};
-
-	MeasuringState measuringState{MeasuringState::FINISHED};
-	float measuringResult;
-	std::mutex measuringMutex;
-	std::condition_variable measuringCondition;
+	std::function<void(const sensor_msgs::LaserScan &)> measuringState;
 
 	ros::NodeHandle nh;
 	ros::Publisher velocityActuatorPublisher;
@@ -65,13 +68,13 @@ protected:
 	ros::Subscriber laserScanSubscriber;
 	filters::FilterChain<sensor_msgs::LaserScan> filterChain;
 
-	std::function<void(const sensor_msgs::LaserScan &)> state;
-
 	virtual void startMeasuring(float actuatorValue) = 0;
 
-	virtual void stopMeasuring();
+	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan);
 
-	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan);
+	float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
+
+	void finishMeasuring(float result);
 };
 
 }

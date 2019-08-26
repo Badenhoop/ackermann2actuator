@@ -18,10 +18,18 @@ public:
 
 private:
 	ros::Time startTime;
+	float velocityActuatorValue;
+	float maxDistance;
+	float minDistance;
+	static const float DISTANCE_EPSILON;
 
 	void startMeasuring(float actuatorValue) override;
 
 	void scanningDistanceState(const sensor_msgs::LaserScan &);
+
+	void findMaxDistance(const sensor_msgs::LaserScan & scan);
+
+	void findMinDistance(const sensor_msgs::LaserScan & scan);
 };
 
 }

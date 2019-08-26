@@ -63,17 +63,17 @@ void MeasuringProcess::run()
 		}
 
 		std::unique_lock<std::mutex> lock{measuringMutex};
-		measuringState = MeasuringState::MEASURING;
+		processState = ProcessState::MEASURING;
 		startMeasuring(actuatorValue);
 
 		ROS_DEBUG_STREAM("waiting");
 
-		while (measuringState == MeasuringState::MEASURING)
+		while (processState == ProcessState::MEASURING)
 		{
 			measuringCondition.wait(lock);
 		}
 
-		if (measuringState == MeasuringState::INTERRUPTED)
+		if (processState == ProcessState::INTERRUPTED)
 		{
 			running = false;
 			break;
@@ -91,11 +91,11 @@ void MeasuringProcess::cancel()
 	running = false;
 
 	std::unique_lock<std::mutex> lock{measuringMutex};
-	if (measuringState == MeasuringState::MEASURING)
+	if (processState == ProcessState::MEASURING)
 	{
-		measuringState = MeasuringState::INTERRUPTED;
+		processState = ProcessState::INTERRUPTED;
 		measuringCondition.notify_all();
-		stopMeasuring();
+		stop();
 	}
 }
 
@@ -136,7 +136,7 @@ void MeasuringProcess::saveMeasurementSeries(const MeasuringProcess::Measurement
 	}
 }
 
-void MeasuringProcess::stopMeasuring()
+void MeasuringProcess::stop()
 {
 	std_msgs::Float64 msg;
 	msg.data = 0.0;
@@ -147,13 +147,27 @@ void MeasuringProcess::stopMeasuring()
 void MeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan)
 {
 	std::unique_lock<std::mutex> lock{measuringMutex};
-	if (measuringState != MeasuringState::MEASURING)
+	if (processState != ProcessState::MEASURING)
 		return;
 
 	sensor_msgs::LaserScan filteredScan;
 	filterChain.update(*scan, filteredScan);
 
-	state(filteredScan);
+	measuringState(filteredScan);
+}
+
+float MeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
+{
+	return *std::min_element(scan.ranges.begin(), scan.ranges.end());
+}
+
+void MeasuringProcess::finishMeasuring(float result)
+{
+	ROS_DEBUG_STREAM("Measuring result: " << result);
+	measuringResult = result;
+	processState = ProcessState::FINISHED;
+	measuringCondition.notify_all();
+	stop();
 }
 
 }

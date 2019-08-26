@@ -4,7 +4,7 @@ turning_radius_measuring:
 
   base_frame: "base_link"
 
-  motor_during_turn: 0.15
+  velocity_actuator_value: 0.15
 
   filter_chain:
     - name: rotation_filter

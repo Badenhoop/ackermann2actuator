@@ -10,11 +10,13 @@ namespace a2a
 
 bool LaserScanMinRangeWindowFilter::configure()
 {
+	// TODO implementation
 	return false;
 }
 
 bool LaserScanMinRangeWindowFilter::update(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & filteredScan)
 {
+	// TODO implementation
 	return false;
 }
 

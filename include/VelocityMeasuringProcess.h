@@ -40,8 +40,6 @@ private:
 
 	void measureState(const sensor_msgs::LaserScan & scan);
 
-	static float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
-
 	float computeVelocity() const;
 };
 
