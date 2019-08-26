@@ -86,12 +86,9 @@ void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
 	if (travelledDistance >= measuringDistance)
 	{
-		ROS_DEBUG_STREAM("Finished measuring speed.");
-		auto deltaTime = now - startTime;
-		measuringResult = travelledDistance / deltaTime.toSec();
-		ROS_DEBUG_STREAM("Measured speed (method 1): " << measuringResult);
 		measuringResult = computeVelocity();
-		ROS_DEBUG_STREAM("Measured speed (method 2): " << measuringResult);
+		ROS_DEBUG_STREAM("Finished measuring speed.");
+		ROS_DEBUG_STREAM("Measured speed: " << measuringResult);
 		measuringState = MeasuringState::FINISHED;
 		measuringCondition.notify_all();
 		stopMeasuring();
