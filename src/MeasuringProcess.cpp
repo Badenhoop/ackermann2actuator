@@ -101,7 +101,7 @@ void MeasuringProcess::cancel()
 
 void MeasuringProcess::loadActuatorValues(std::vector<float> & actuatorValues)
 {
-	ros::param::get("~" + paramNamespace + "/actuator_values", actuatorValues);
+	ros::param::get(paramNamespace + "/actuator_values", actuatorValues);
 }
 
 void MeasuringProcess::loadMeasurementSeries(MeasurementSeries & measurements)
