@@ -10,8 +10,8 @@ namespace a2a
 
 void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 {
-	ros::param::get("~" + paramNamespace + "/acceleration_distance", accelerationDistance);
-	ros::param::get("~" + paramNamespace + "/measuring_distance", measuringDistance);
+	ros::param::get(paramNamespace + "/acceleration_distance", accelerationDistance);
+	ros::param::get(paramNamespace + "/measuring_distance", measuringDistance);
 
 	ROS_DEBUG_STREAM("acceleration distance: " << accelerationDistance);
 	ROS_DEBUG_STREAM("measuring distance: " << measuringDistance);
@@ -20,26 +20,14 @@ void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 	startTime = ros::Time::now();
 	measurements = std::vector<Measurement>{};
 
-	ROS_DEBUG_STREAM("Start scanning distance...");
-	state = [&] (auto && ... args) { this->scanningDistanceState(args...); };
-
 	// keep steering angle and velocity neutral
 	std_msgs::Float64 msg;
 	msg.data = 0.0;
 	steeringActuatorPublisher.publish(msg);
 	velocityActuatorPublisher.publish(msg);
-}
 
-void VelocityMeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg)
-{
-	std::unique_lock<std::mutex> lock{measuringMutex};
-	if (measuringState != MeasuringState::MEASURING)
-		return;
-
-	sensor_msgs::LaserScan filteredMsg;
-	filterChain.update(*msg, filteredMsg);
-
-	state(filteredMsg);
+	ROS_DEBUG_STREAM("Start scanning distance...");
+	state = [&] (auto && ... args) { this->scanningDistanceState(args...); };
 }
 
 void VelocityMeasuringProcess::scanningDistanceState(const sensor_msgs::LaserScan & scan)
@@ -93,6 +81,11 @@ void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 		measuringCondition.notify_all();
 		stopMeasuring();
 	}
+}
+
+float VelocityMeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
+{
+	return *std::min_element(scan.ranges.begin(), scan.ranges.end());
 }
 
 float VelocityMeasuringProcess::computeVelocity() const

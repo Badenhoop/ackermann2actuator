@@ -17,9 +17,11 @@ public:
 	{}
 
 private:
+	ros::Time startTime;
+
 	void startMeasuring(float actuatorValue) override;
 
-	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg) override;
+	void scanningDistanceState(const sensor_msgs::LaserScan &);
 };
 
 }

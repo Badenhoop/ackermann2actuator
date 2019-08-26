@@ -9,9 +9,31 @@ turning_radius_measuring:
   scan_window: 30
   range_change_threshold: 0.3
 
+  filter_chain:
+    - name: min_range_window_filter
+      type: a2a/MinRangeWindowFilter
+      params:
+        - window_angle: 1.57
+        - max_change_in_range: 0.3
+
 velocity_measuring:
 
   actuator_values: [0.15]
 
   measuring_distance: 2.0
   acceleration_distance: 1.0
+
+  filter_chain:
+    - name: window_filter
+        type: laser_filters/LaserScanAngularBoundsFilter
+        params:
+          lower_angle: -0.174 # -10°
+          upper_angle: 0.174 # 10°
+#    - name: array_filter
+#        type: laser_filters/LaserArrayFilter
+#        params:
+#          range_filter_chain:
+#            - name: range_median_filter
+#              type: filters/MultiChannelMedianFilterFloat
+#              params:
+#                number_of_observations: 5

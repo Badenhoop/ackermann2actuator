@@ -29,9 +29,4 @@ void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
 	result = ros::xmlrpc::responseInt(1, "", 0);
 }
 
-float getDistanceFromScan(const sensor_msgs::LaserScan & scan)
-{
-	return *std::min_element(scan.ranges.begin(), scan.ranges.end());
-}
-
 }

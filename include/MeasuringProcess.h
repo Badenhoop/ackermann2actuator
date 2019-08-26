@@ -65,11 +65,13 @@ protected:
 	ros::Subscriber laserScanSubscriber;
 	filters::FilterChain<sensor_msgs::LaserScan> filterChain;
 
+	std::function<void(const sensor_msgs::LaserScan &)> state;
+
 	virtual void startMeasuring(float actuatorValue) = 0;
 
 	virtual void stopMeasuring();
 
-	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan) = 0;
+	virtual void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan);
 };
 
 }

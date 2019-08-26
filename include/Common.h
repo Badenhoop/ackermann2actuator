@@ -67,8 +67,6 @@ void runExperimentNode(int argc, char ** argv, const std::string & nodeName)
 	signalThread.join();
 }
 
-float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
-
 }
 
 #endif //ACKERMANN2ACTUATOR_COMMON_H

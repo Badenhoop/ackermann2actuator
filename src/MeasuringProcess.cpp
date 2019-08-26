@@ -19,7 +19,7 @@ MeasuringProcess::MeasuringProcess(std::string paramNamespace)
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
 	laserScanSubscriber = nh.subscribe("scan", 10, &MeasuringProcess::laserScanCallback, this);
-	filterChain.configure(this->paramNamespace + "_filter_chain");
+	filterChain.configure(this->paramNamespace + "/filter_chain");
 }
 
 void MeasuringProcess::run()
@@ -142,6 +142,18 @@ void MeasuringProcess::stopMeasuring()
 	msg.data = 0.0;
 	velocityActuatorPublisher.publish(msg);
 	steeringActuatorPublisher.publish(msg);
+}
+
+void MeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan)
+{
+	std::unique_lock<std::mutex> lock{measuringMutex};
+	if (measuringState != MeasuringState::MEASURING)
+		return;
+
+	sensor_msgs::LaserScan filteredScan;
+	filterChain.update(*scan, filteredScan);
+
+	state(filteredScan);
 }
 
 }

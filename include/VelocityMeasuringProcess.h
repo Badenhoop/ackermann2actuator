@@ -32,17 +32,15 @@ private:
 
 	std::vector<Measurement> measurements;
 
-	std::function<void(const sensor_msgs::LaserScan &)> state;
-
 	void startMeasuring(float actuatorValue) override;
-
-	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & msg) override;
 
 	void scanningDistanceState(const sensor_msgs::LaserScan &);
 
 	void accelerationState(const sensor_msgs::LaserScan & scan);
 
 	void measureState(const sensor_msgs::LaserScan & scan);
+
+	static float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
 
 	float computeVelocity() const;
 };
