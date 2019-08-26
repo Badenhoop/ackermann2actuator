@@ -1,0 +1,8 @@
+<library path="lib/liblaser_scan_filters">
+    <class name="laser_filters/LaserScanMinRangeWindowFilter" type="a2a::LaserScanMinRangeWindowFilter"
+           base_class_type="filters::FilterBase<sensor_msgs::LaserScan>">
+        <description>
+            This is a filter which updates a moving window containing the current minimum range measurement.
+        </description>
+    </class>
+</library>

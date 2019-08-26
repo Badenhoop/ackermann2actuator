@@ -2,8 +2,8 @@
 // Created by philipp on 15.08.19.
 //
 
-#include "../include/Common.h"
-#include "../include/VelocityMeasuringProcess.h"
+#include "Common.h"
+#include "VelocityMeasuringProcess.h"
 
 int main(int argc, char ** argv)
 {

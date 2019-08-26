@@ -132,14 +132,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/ackermann2actuator.cpp
-# )
+add_library(a2a_laser_scan_filters
+  include/MinRangeWindowFilter.h
+  src/MinRangeWindowFilter.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

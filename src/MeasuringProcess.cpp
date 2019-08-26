@@ -2,8 +2,8 @@
 // Created by philipp on 16.08.19.
 //
 
-#include "../include/MeasuringProcess.h"
-#include "../include/Csv.h"
+#include "MeasuringProcess.h"
+#include "Csv.h"
 #include <iostream>
 #include <std_msgs/Float64.h>
 

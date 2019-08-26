@@ -2,8 +2,8 @@
 // Created by philipp on 15.08.19.
 //
 
-#include "../include/VelocityMeasuringProcess.h"
-#include "../include/Common.h"
+#include "VelocityMeasuringProcess.h"
+#include "Common.h"
 
 namespace a2a
 {
