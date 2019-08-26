@@ -24,12 +24,13 @@ private:
 	double startDistance;
 	ros::Time startTime;
 
-	enum class DriveMode
+	struct Measurement
 	{
-		FORWARD, BACKWARD
+		ros::Time time;
+		float distance;
 	};
 
-	DriveMode driveMode;
+	std::vector<Measurement> measurements;
 
 	std::function<void(const sensor_msgs::LaserScan &)> state;
 
@@ -42,6 +43,8 @@ private:
 	void accelerationState(const sensor_msgs::LaserScan & scan);
 
 	void measureState(const sensor_msgs::LaserScan & scan);
+
+	float computeVelocity() const;
 };
 
 }

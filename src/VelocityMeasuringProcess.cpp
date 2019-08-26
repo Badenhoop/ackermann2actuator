@@ -18,11 +18,7 @@ void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 
 	velocityActuatorValue = actuatorValue;
 	startTime = ros::Time::now();
-
-	if (velocityActuatorValue >= 0)
-		driveMode = DriveMode::FORWARD;
-	else
-		driveMode = DriveMode::BACKWARD;
+	measurements = std::vector<Measurement>{};
 
 	ROS_DEBUG_STREAM("Start scanning distance...");
 	state = [&] (auto && ... args) { this->scanningDistanceState(args...); };
@@ -66,14 +62,14 @@ void VelocityMeasuringProcess::scanningDistanceState(const sensor_msgs::LaserSca
 
 void VelocityMeasuringProcess::accelerationState(const sensor_msgs::LaserScan & scan)
 {
-	float distanceToWall = getDistanceFromScan(scan);
-	float travelledDistance = std::abs(startDistance - distanceToWall);
-	ROS_DEBUG_STREAM("distance to wall: " << distanceToWall);
+	float scannedDistance = getDistanceFromScan(scan);
+	float travelledDistance = std::abs(startDistance - scannedDistance);
+	ROS_DEBUG_STREAM("scanned distance: " << scannedDistance);
 	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
 	if (travelledDistance >= accelerationDistance)
 	{
 		startTime = ros::Time::now();
-		startDistance = distanceToWall;
+		startDistance = scannedDistance;
 
 		ROS_DEBUG_STREAM("Start measuring...");
 		state = [&] (auto && ... args) { this->measureState(args...); };
@@ -82,21 +78,42 @@ void VelocityMeasuringProcess::accelerationState(const sensor_msgs::LaserScan & 
 
 void VelocityMeasuringProcess::measureState(const sensor_msgs::LaserScan & scan)
 {
-	float distanceToWall = getDistanceFromScan(scan);
-	float travelledDistance = std::abs(startDistance - distanceToWall);
-	ROS_DEBUG_STREAM("distance to wall: " << distanceToWall);
+	auto now = ros::Time::now();
+	float scannedDistances = getDistanceFromScan(scan);
+	measurements.emplace_back(Measurement{now, scannedDistances});
+	float travelledDistance = std::abs(startDistance - scannedDistances);
+	ROS_DEBUG_STREAM("scanned distance: " << scannedDistances);
 	ROS_DEBUG_STREAM("travelled distance: " << travelledDistance);
 	if (travelledDistance >= measuringDistance)
 	{
-		auto deltaTime = ros::Time::now() - startTime;
-		// v = s / t
-		measuringResult = travelledDistance / deltaTime.toSec();
 		ROS_DEBUG_STREAM("Finished measuring speed.");
-		ROS_DEBUG_STREAM("Measured speed: " << measuringResult);
+		auto deltaTime = now - startTime;
+		measuringResult = travelledDistance / deltaTime.toSec();
+		ROS_DEBUG_STREAM("Measured speed (method 1): " << measuringResult);
+		measuringResult = computeVelocity();
+		ROS_DEBUG_STREAM("Measured speed (method 2): " << measuringResult);
 		measuringState = MeasuringState::FINISHED;
 		measuringCondition.notify_all();
 		stopMeasuring();
 	}
+}
+
+float VelocityMeasuringProcess::computeVelocity() const
+{
+	if (measurements.size() < 2)
+	{
+		ROS_INFO_STREAM("Faulty measurement!");
+		return 0;
+	}
+
+	double velocity = 0;
+	for (std::size_t i = 1; i < measurements.size(); ++i)
+	{
+		double deltaTime = std::abs(measurements[i].time.toSec() - measurements[i - 1].time.toSec());
+		double distance = std::abs(measurements[i].distance - measurements[i - 1].distance);
+		velocity += distance / deltaTime;
+	}
+	return velocity / (measurements.size() - 1);
 }
 
 }
