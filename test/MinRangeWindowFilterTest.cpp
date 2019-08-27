@@ -10,6 +10,8 @@
 #include <thread>
 #include <chrono>
 
+constexpr double EPSILON = 0.0001;
+
 sensor_msgs::LaserScan generateScan(float minAngle,
 									float maxAngle,
 									std::size_t numSamples,
@@ -42,6 +44,29 @@ sensor_msgs::LaserScan generateScan(float minAngle,
 double rad2deg(double rad)
 {
 	return rad * (180.0 / M_PI);
+}
+
+double deg2rad(double deg)
+{
+	return deg * (M_PI / 180.0);
+}
+
+void compareScans(const sensor_msgs::LaserScan & scan1, const sensor_msgs::LaserScan & scan2)
+{
+	EXPECT_NEAR(scan1.header.stamp.toSec(), scan2.header.stamp.toSec(), EPSILON);
+	EXPECT_EQ(scan1.header.frame_id, scan2.header.frame_id);
+	EXPECT_NEAR(scan1.angle_min, scan2.angle_min, EPSILON);
+	EXPECT_NEAR(scan1.angle_max, scan2.angle_max, EPSILON);
+	EXPECT_NEAR(scan1.angle_increment, scan2.angle_increment, EPSILON);
+	EXPECT_NEAR(scan1.scan_time, scan2.scan_time, EPSILON);
+	EXPECT_EQ(scan1.range_min, scan2.range_min);
+	EXPECT_EQ(scan1.range_max, scan2.range_max);
+	EXPECT_EQ(scan1.ranges.size(), scan2.ranges.size());
+	EXPECT_EQ(scan1.intensities.size(), scan2.intensities.size());
+	for (std::size_t i = 0; i < scan1.ranges.size(); ++i)
+		EXPECT_NEAR(scan1.ranges[i], scan2.ranges[i], EPSILON);
+	for (std::size_t i = 0; i < scan1.intensities.size(); ++i)
+		EXPECT_NEAR(scan1.intensities[i], scan2.intensities[i], EPSILON);
 }
 
 void printScan(const sensor_msgs::LaserScan & scan, std::ostream & stream)
@@ -83,14 +108,24 @@ TEST(MinRangeWindowFilter, fixedMinimum)
 	filters::FilterChain<sensor_msgs::LaserScan> filterChain("sensor_msgs::LaserScan");
 	filterChain.configure("filter_chain");
 
-	auto inputScan = generateScan(0, 2 * M_PI, 10, M_PI, 1, 2);
+	auto inputScan = generateScan(0, deg2rad(360), 10, deg2rad(180), 1, 2);
 	sensor_msgs::LaserScan filteredScan;
 	filterChain.update(inputScan, filteredScan);
 
-	std::ofstream f{"/home/philipp/tmp/out.txt"};
+	sensor_msgs::LaserScan shouldScan;
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(144);
+	shouldScan.angle_max = deg2rad(216);
+	shouldScan.angle_increment = deg2rad(36);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 1.f, 2.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
 
-	printScan(inputScan, f);
-	printScan(filteredScan, f);
+	compareScans(filteredScan, shouldScan);
 }
 
 TEST(MinRangeWindowFilter, rotatingMinimum)
