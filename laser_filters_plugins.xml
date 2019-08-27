@@ -1,4 +1,4 @@
-<library path="lib/liblaser_scan_filters">
+<library path="lib/liba2a_laser_scan_filters">
     <class name="laser_filters/LaserScanMinRangeWindowFilter" type="a2a::LaserScanMinRangeWindowFilter"
            base_class_type="filters::FilterBase<sensor_msgs::LaserScan>">
         <description>

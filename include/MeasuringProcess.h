@@ -13,6 +13,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include "filters/filter_chain.h"
 #include <std_msgs/Float64.h>
+#include <atomic>
 
 namespace a2a
 {

@@ -11,6 +11,13 @@
 namespace a2a
 {
 
+/**
+ * @param angle
+ * @param lowerBound
+ * @return Constrains a given angle to be in the interval [lowerBound, lowerBound + 2 * pi).
+ */
+double constrainAngle(double angle, double lowerBound);
+
 class LaserScanMinRangeWindowFilter : public filters::FilterBase<sensor_msgs::LaserScan>
 {
 public:
@@ -34,8 +41,6 @@ private:
 	void updateWindow(const sensor_msgs::LaserScan & scan);
 
 	void computeWindowedScan(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & windowedScan);
-
-	static double constrainAngle(double angle, double lowerBound);
 };
 
 }

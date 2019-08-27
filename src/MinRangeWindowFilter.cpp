@@ -57,8 +57,8 @@ void LaserScanMinRangeWindowFilter::updateWindow(const sensor_msgs::LaserScan & 
 void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::LaserScan & inputScan,
                                                         sensor_msgs::LaserScan & windowedScan)
 {
-	auto angleIncrement = (double) inputScan.angle_increment;
-	auto size = (std::size_t) (windowAngle / angleIncrement);
+	auto angleIncrement = double(inputScan.angle_increment);
+	auto size = std::size_t(windowAngle / angleIncrement);
 	windowedScan.ranges.resize(size);
 	windowedScan.intensities.resize(size);
 
@@ -79,7 +79,7 @@ void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::Laser
 			continue;
 		}
 
-		auto currIndex = (std::size_t) ((currWindowAngle - inputScan.angle_min) / angleIncrement);
+		auto currIndex = std::size_t((currWindowAngle - inputScan.angle_min) / angleIncrement);
 		auto currRange = inputScan.ranges[currIndex];
 		auto currIntensity = inputScan.intensities[currIndex];
 
@@ -109,12 +109,7 @@ void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::Laser
 	windowedScan.range_max = inputScan.range_max;
 }
 
-/**
- * @param angle
- * @param lowerBound
- * @return Constrains a given angle to be in the interval [lowerBound, lowerBound + 2 * pi).
- */
-double LaserScanMinRangeWindowFilter::constrainAngle(double angle, double lowerBound)
+double constrainAngle(double angle, double lowerBound)
 {
 	angle = std::fmod(angle - lowerBound, 2.0 * M_PI);
 	if (angle < 0)
