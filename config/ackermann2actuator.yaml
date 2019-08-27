@@ -19,7 +19,7 @@ turning_radius_measuring:
     - name: min_range_window_filter
       type: laser_filters/LaserScanMinRangeWindowFilter
       params:
-        window_angle: 1.57
+        window_size: 180
         change_in_range_threshold: 0.3
         range_replacement_value: .inf
         intensity_replacement_value: .inf

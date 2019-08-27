@@ -12,17 +12,17 @@ namespace a2a
 bool LaserScanMinRangeWindowFilter::configure()
 {
 	lastWindowMinRange = 0;
-	lastWindowCenterAngle = 0;
+	lastWindowMinAngle = 0;
 	firstUpdate = true;
 
-	if (!getParam("window_angle", windowAngle) ||
+	if (!getParam("window_size", windowSize) ||
 	    !getParam("change_in_range_threshold", changeInRangeThreshold) ||
 	    !getParam("range_replacement_value", rangeReplacementValue) ||
 	    !getParam("intensity_replacement_value", intensityReplacementValue))
 	{
 		ROS_ERROR(
 			"The parameters "
-			"window_angle, change_in_range_threshold, range_replacement_value and replacement_value "
+			"window_size, change_in_range_threshold, range_replacement_value and replacement_value "
 			"must be set to use this filter.");
 		return false;
 	}
@@ -50,59 +50,54 @@ void LaserScanMinRangeWindowFilter::updateWindow(const sensor_msgs::LaserScan & 
 {
 	auto it = std::min_element(scan.ranges.begin(), scan.ranges.end());
 	auto index = std::distance(scan.ranges.begin(), it);
+	auto windowMinIndex = int(index) - (windowSize / 2);
 	lastWindowMinRange = *it;
-	lastWindowCenterAngle = scan.angle_min + index * scan.angle_increment;
+	lastWindowMinAngle = scan.angle_min + windowMinIndex * scan.angle_increment;
 }
 
 void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::LaserScan & inputScan,
                                                         sensor_msgs::LaserScan & windowedScan)
 {
-	auto angleIncrement = double(inputScan.angle_increment);
-	auto size = std::size_t(windowAngle / angleIncrement);
-	windowedScan.ranges.resize(size);
-	windowedScan.intensities.resize(size);
+	windowedScan.ranges.resize(windowSize);
+	windowedScan.intensities.resize(windowSize);
 
-	auto windowMinAngle = lastWindowCenterAngle - (windowAngle / 2.0);
-	auto windowMaxAngle = lastWindowCenterAngle + (windowAngle / 2.0);
+	// constrain lastWindowMinAngle to be in the interval [inputScan.angle_min, inputScan.angle_min + 2 * pi)
+	auto windowMinAngle = constrainAngle(lastWindowMinAngle, inputScan.angle_min);
+	auto windowMinIndex = std::size_t(std::round((windowMinAngle - inputScan.angle_min) / inputScan.angle_increment));
+	auto incrementsPer2Pi = std::size_t(std::round(2.0 * M_PI / inputScan.angle_increment));
 
-	for (std::size_t i = 0; i < size; ++i)
+	for (std::size_t i = 0; i < windowSize; ++i)
 	{
-		auto currWindowAngle = windowMinAngle + i * angleIncrement;
-		// constrain currWindowAngle to be in the interval [inputScan.angle_min, inputScan.angle_min + 2 * pi)
-		currWindowAngle = constrainAngle(currWindowAngle, inputScan.angle_min);
-
+		// note: index could wrap over 2 * pi
+		auto index = (windowMinIndex + i) % incrementsPer2Pi;
 		// angle is not covered by the scan
-		if (currWindowAngle > inputScan.angle_max)
+		if (index >= inputScan.ranges.size())
 		{
 			windowedScan.ranges[i] = rangeReplacementValue;
 			windowedScan.intensities[i] = intensityReplacementValue;
 			continue;
 		}
 
-		auto currIndex = std::size_t((currWindowAngle - inputScan.angle_min) / angleIncrement);
-		auto currRange = inputScan.ranges[currIndex];
-		auto currIntensity = inputScan.intensities[currIndex];
+		auto range = inputScan.ranges[index];
+		auto intensity = inputScan.intensities[index];
 
 		// if change in range between two time steps is greater than given threshold
-		if (std::abs(currRange - lastWindowMinRange) > changeInRangeThreshold)
+		if (std::abs(range - lastWindowMinRange) > changeInRangeThreshold)
 		{
 			windowedScan.ranges[i] = rangeReplacementValue;
 			windowedScan.intensities[i] = intensityReplacementValue;
 			continue;
 		}
 
-		windowedScan.ranges[i] = currRange;
-		windowedScan.intensities[i] = currIntensity;
+		windowedScan.ranges[i] = range;
+		windowedScan.intensities[i] = intensity;
 	}
 
 	windowedScan.header.frame_id = inputScan.header.frame_id;
-	windowedScan.header.stamp =
-		inputScan.header.stamp + ros::Duration{
-			((constrainAngle(windowMinAngle, inputScan.angle_min) - inputScan.angle_min) / angleIncrement)
-			* inputScan.time_increment};
+	windowedScan.header.stamp = inputScan.header.stamp + ros::Duration{windowMinIndex * inputScan.time_increment};
 	windowedScan.angle_min = windowMinAngle;
-	windowedScan.angle_max = windowMaxAngle;
-	windowedScan.angle_increment = angleIncrement;
+	windowedScan.angle_max = windowMinAngle + (windowSize - 1) * inputScan.angle_increment;
+	windowedScan.angle_increment = inputScan.angle_increment;
 	windowedScan.time_increment = inputScan.time_increment;
 	windowedScan.scan_time = inputScan.scan_time;
 	windowedScan.range_min = inputScan.range_min;

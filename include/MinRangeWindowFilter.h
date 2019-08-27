@@ -28,13 +28,13 @@ public:
 	bool update(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & filteredScan) override;
 
 private:
-	double windowAngle;
+	int windowSize;
 	double changeInRangeThreshold;
 	double rangeReplacementValue;
 	double intensityReplacementValue;
 
 	double lastWindowMinRange;
-	double lastWindowCenterAngle;
+	double lastWindowMinAngle;
 
 	bool firstUpdate;
 
