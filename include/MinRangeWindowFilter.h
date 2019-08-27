@@ -23,7 +23,19 @@ public:
 private:
 	double windowAngle;
 	double changeInRangeThreshold;
-	double replacementValue;
+	double rangeReplacementValue;
+	double intensityReplacementValue;
+
+	double lastWindowMinRange;
+	double lastWindowCenterAngle;
+
+	bool firstUpdate;
+
+	void updateWindow(const sensor_msgs::LaserScan & scan);
+
+	void computeWindowedScan(const sensor_msgs::LaserScan & inputScan, sensor_msgs::LaserScan & windowedScan);
+
+	static double constrainAngle(double angle, double lowerBound);
 };
 
 }

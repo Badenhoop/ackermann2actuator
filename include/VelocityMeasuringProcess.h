@@ -20,6 +20,7 @@ private:
 	double velocityActuatorValue;
 	double accelerationDistance;
 	double measuringDistance;
+	double safetyDistance;
 
 	double startDistance;
 	ros::Time startTime;
@@ -41,6 +42,8 @@ private:
 	void measureState(const sensor_msgs::LaserScan & scan);
 
 	float computeVelocity() const;
+
+	float getDistanceFromScan(const sensor_msgs::LaserScan & scan) override;
 };
 
 }

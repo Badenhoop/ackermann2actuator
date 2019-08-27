@@ -11,10 +11,13 @@ namespace a2a
 void VelocityMeasuringProcess::startMeasuring(float actuatorValue)
 {
 	ros::param::get(paramNamespace + "/acceleration_distance", accelerationDistance);
-	ros::param::get(paramNamespace + "/measuring_distance", measuringDistance);
-
 	ROS_DEBUG_STREAM("acceleration distance: " << accelerationDistance);
+
+	ros::param::get(paramNamespace + "/measuring_distance", measuringDistance);
 	ROS_DEBUG_STREAM("measuring distance: " << measuringDistance);
+
+	ros::param::get(paramNamespace + "/safety_distance", safetyDistance);
+	ROS_DEBUG_STREAM("safety distance: " << safetyDistance);
 
 	velocityActuatorValue = actuatorValue;
 	startTime = ros::Time::now();
@@ -81,8 +84,7 @@ float VelocityMeasuringProcess::computeVelocity() const
 {
 	if (measurements.size() < 2)
 	{
-		ROS_INFO_STREAM("Faulty measurement!");
-		return 0;
+		throw BadMeasuringException{"Too few collected scans!"};
 	}
 
 	double velocity = 0;
@@ -93,6 +95,16 @@ float VelocityMeasuringProcess::computeVelocity() const
 		velocity += distance / deltaTime;
 	}
 	return velocity / (measurements.size() - 1);
+}
+
+float VelocityMeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
+{
+	auto distance = MeasuringProcess::getDistanceFromScan(scan);
+	if (distance < safetyDistance)
+	{
+		throw BadMeasuringException{"Distance below safety distance."};
+	}
+	return distance;
 }
 
 }

@@ -21,7 +21,8 @@ turning_radius_measuring:
       params:
         window_angle: 1.57
         change_in_range_threshold: 0.3
-        replacement_value: .inf
+        range_replacement_value: .inf
+        intensity_replacement_value: .inf
 
 velocity_measuring:
 
@@ -29,6 +30,7 @@ velocity_measuring:
 
   measuring_distance: 2.0
   acceleration_distance: 1.0
+  safety_distance: 2.0
 
   filter_chain:
     - name: rotation_filter

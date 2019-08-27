@@ -153,12 +153,25 @@ void MeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & 
 	sensor_msgs::LaserScan filteredScan;
 	filterChain.update(*scan, filteredScan);
 
-	measuringState(filteredScan);
+	try
+	{
+		measuringState(filteredScan);
+	}
+	catch (const BadMeasuringException & e)
+	{
+		ROS_ERROR_STREAM("Bad measurement! Please try again. The reason: " << e.what());
+		finishMeasuring(0);
+	}
 }
 
 float MeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
 {
-	return *std::min_element(scan.ranges.begin(), scan.ranges.end());
+	auto distance = *std::min_element(scan.ranges.begin(), scan.ranges.end());
+	if (distance == std::numeric_limits<float>::infinity())
+	{
+		throw BadMeasuringException{"Scanned distance: infinity."};
+	}
+	return distance;
 }
 
 void MeasuringProcess::finishMeasuring(float result)

@@ -72,9 +72,15 @@ protected:
 
 	void laserScanCallback(const sensor_msgs::LaserScanConstPtr & scan);
 
-	float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
+	virtual float getDistanceFromScan(const sensor_msgs::LaserScan & scan);
 
 	void finishMeasuring(float result);
+};
+
+class BadMeasuringException : public std::runtime_error
+{
+public:
+	explicit BadMeasuringException(const std::string & what) : std::runtime_error(what) {}
 };
 
 }

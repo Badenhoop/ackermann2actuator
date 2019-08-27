@@ -12,6 +12,7 @@ const float TurningRadiusMeasuringProcess::DISTANCE_EPSILON = 0.1;
 void TurningRadiusMeasuringProcess::startMeasuring(float actuatorValue)
 {
 	ros::param::get(paramNamespace + "/velocity_actuator_value", velocityActuatorValue);
+	ROS_DEBUG_STREAM("velocity actuator value: " << velocityActuatorValue);
 
 	startTime = ros::Time::now();
 	maxDistance = std::numeric_limits<float>::min();
@@ -40,26 +41,26 @@ void TurningRadiusMeasuringProcess::scanningDistanceState(const sensor_msgs::Las
 		velocityActuatorPublisher.publish(msg);
 
 		ROS_DEBUG_STREAM("Start finding maximum distance...");
-		measuringState = [&] (auto && ... args) { this->findMaxDistance(args...); };
+		measuringState = [&] (auto && ... args) { this->findMaxDistanceState(args...); };
 	}
 }
 
-void TurningRadiusMeasuringProcess::findMaxDistance(const sensor_msgs::LaserScan & scan)
+void TurningRadiusMeasuringProcess::findMaxDistanceState(const sensor_msgs::LaserScan & scan)
 {
 	auto distance = getDistanceFromScan(scan);
 	maxDistance = std::max(maxDistance, distance);
 	if (std::abs(distance - maxDistance) > DISTANCE_EPSILON)
 	{
 		ROS_DEBUG_STREAM("Start finding minimum distance...");
-		measuringState = [&] (auto && ... args) { this->findMinDistance(args...); };
+		measuringState = [&] (auto && ... args) { this->findMinDistanceState(args...); };
 	}
 }
 
-void TurningRadiusMeasuringProcess::findMinDistance(const sensor_msgs::LaserScan & scan)
+void TurningRadiusMeasuringProcess::findMinDistanceState(const sensor_msgs::LaserScan & scan)
 {
 	auto distance = getDistanceFromScan(scan);
-	maxDistance = std::min(maxDistance, distance);
-	if (std::abs(distance - maxDistance) > DISTANCE_EPSILON)
+	minDistance = std::min(minDistance, distance);
+	if (std::abs(distance - minDistance) > DISTANCE_EPSILON)
 	{
 		float turningRadius = std::abs(maxDistance - minDistance);
 		finishMeasuring(turningRadius);
