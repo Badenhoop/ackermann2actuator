@@ -1,0 +1,4 @@
+<launch>
+    <rosparam command="load" file="$(find ackermann2actuator)/test/MinRangeWindowFilterTest.yaml" />
+    <test test-name="TestMinRangeWindowFilter" pkg="ackermann2actuator" type="min_range_window_filter_test" />
+</launch>

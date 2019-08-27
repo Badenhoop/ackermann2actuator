@@ -21,7 +21,6 @@ private:
 	float velocityActuatorValue;
 	float maxDistance;
 	float minDistance;
-	bool findMaxDistance;
 	static const float DISTANCE_EPSILON;
 
 	void startMeasuring(float actuatorValue) override;

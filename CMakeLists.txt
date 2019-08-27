@@ -161,8 +161,7 @@ add_executable(velocity_measuring_node ${SOURCE_FILES} src/VelocityMeasuringNode
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(turning_radius_measuring_node ${turning_radius_measuring_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(velocity_measuring_node ${velocity_measuring_node_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(turning_radius_measuring_node ${catkin_LIBRARIES})
@@ -222,3 +221,9 @@ target_link_libraries(velocity_measuring_node ${catkin_LIBRARIES})
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+if(CATKIN_ENABLE_TESTING)
+    find_package(rostest REQUIRED)
+    add_rostest_gtest(min_range_window_filter_test test/MinRangeWindowFilterTest.test test/MinRangeWindowFilterTest.cpp)
+    target_link_libraries(min_range_window_filter_test a2a_laser_scan_filters ${catkin_LIBRARIES})
+endif()
