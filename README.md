@@ -12,15 +12,15 @@ This package focuses on finding such a mapping for ackermann drive robots which 
 To abstract away from specific driver implementations, we assume that the motor and servo actuator values are in the range -1 to 1.
 Then our goal is to find the parameters of two linear mappings:
 
-    velocity = velocity_gain * motor_actuator_value + velocity_offset
-    steering_angle = steering_angle_gain * servo_actuator_value + steering_angle_offset
+    velocity = velocity_coefficient * motor_actuator_value + velocity_intercept
+    steering_angle = steering_angle_coefficient * servo_actuator_value + steering_angle_intercept
 
 So the four parameters in question are:
 
-* velocity_gain
-* velocity_offset
-* steering_angle_gain
-* steering_angle_offset
+* velocity_coefficient
+* velocity_intercept
+* steering_angle_coefficient
+* steering_angle_intercept
   
 which will be determined with linear regression based on a series of individual measuring experiments with your specific robot.
 There are two kinds of experiments.
