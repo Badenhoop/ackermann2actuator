@@ -6,12 +6,12 @@
 #include <ros/ros.h>
 #include <filters/filter_chain.h>
 #include "MinRangeWindowFilter.h"
-#include <fstream>
-#include <thread>
-#include <chrono>
+#include "Utils.h"
 
 constexpr double EPSILON = 0.0001;
 constexpr float inf = std::numeric_limits<float>::infinity();
+
+using namespace a2a::utils;
 
 sensor_msgs::LaserScan generateScan(float minAngle,
 									float maxAngle,
@@ -40,16 +40,6 @@ sensor_msgs::LaserScan generateScan(float minAngle,
 	auto minRangeIndex = std::size_t(std::round((minRangeAngle - minAngle) / scan.angle_increment));
 	scan.ranges[minRangeIndex] = minRange;
 	return scan;
-}
-
-double rad2deg(double rad)
-{
-	return rad * (180.0 / M_PI);
-}
-
-double deg2rad(double deg)
-{
-	return deg * (M_PI / 180.0);
 }
 
 void compareFloats(float f1, float f2)
@@ -87,7 +77,7 @@ void printScan(const sensor_msgs::LaserScan & scan, std::ostream & stream)
 	for (std::size_t i = 0; i < count; ++i)
 	{
 		auto angle = scan.angle_min + i * scan.angle_increment;
-		auto constrainedAngle = a2a::constrainAngle(angle, 0.0);
+		auto constrainedAngle = constrainAngle(angle, 0.0);
 		if (angle > scan.angle_max)
 		{
 			stream << "\t\t" << std::fixed << std::setprecision(2) << rad2deg(constrainedAngle) << ": -\n";
@@ -242,11 +232,8 @@ TEST(MinRangeWindowFilter, exceedChangeInRangeThreshold)
 	sensor_msgs::LaserScan filteredScan;
 	sensor_msgs::LaserScan shouldScan;
 
-	std::ofstream f{"/home/philipp/tmp/out.txt"};
-
 	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(180), 3, 4);
 	filterChain.update(inputScan, filteredScan);
-	printScan(filteredScan, f);
 
 	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
 	shouldScan.header.frame_id = inputScan.header.frame_id;
@@ -267,7 +254,6 @@ TEST(MinRangeWindowFilter, exceedChangeInRangeThreshold)
 	// new valid minimum is set at 235° with range=2.0
 	inputScan.ranges[5] = 2.0;
 	filterChain.update(inputScan, filteredScan);
-	printScan(filteredScan, f);
 
 	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
 	shouldScan.header.frame_id = inputScan.header.frame_id;
@@ -285,7 +271,6 @@ TEST(MinRangeWindowFilter, exceedChangeInRangeThreshold)
 
 	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(270), 1, 2);
 	filterChain.update(inputScan, filteredScan);
-	printScan(filteredScan, f);
 
 	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
 	shouldScan.header.frame_id = inputScan.header.frame_id;
@@ -307,7 +292,5 @@ int main(int argc, char ** argv)
 	testing::InitGoogleTest(&argc, argv);
 	ros::init(argc, argv, "min_range_window_filter_test");
 	ros::Time::init();
-//	using namespace std::chrono_literals;
-//	std::this_thread::sleep_for(10s);
 	return RUN_ALL_TESTS();
 }

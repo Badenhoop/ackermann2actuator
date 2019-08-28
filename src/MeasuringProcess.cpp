@@ -6,6 +6,7 @@
 #include "Csv.h"
 #include <iostream>
 #include <std_msgs/Float64.h>
+#include "Utils.h"
 
 namespace a2a
 {
@@ -165,7 +166,11 @@ void MeasuringProcess::laserScanCallback(const sensor_msgs::LaserScanConstPtr & 
 
 float MeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
 {
-	auto distance = *std::min_element(scan.ranges.begin(), scan.ranges.end());
+	auto it = std::min_element(scan.ranges.begin(), scan.ranges.end());
+	auto index = std::distance(scan.ranges.begin(), it);
+	auto distance = *it;
+	auto angle = utils::rad2deg(utils::constrainAngle(scan.angle_min + index * scan.angle_increment, 0.0));
+	ROS_DEBUG("Measured distance: %.2fm at %.2f degree", distance, angle);
 	if (distance == std::numeric_limits<float>::infinity())
 	{
 		throw BadMeasuringException{"Scanned distance: infinity."};

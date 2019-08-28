@@ -5,6 +5,7 @@
 #include "MinRangeWindowFilter.h"
 #include "pluginlib/class_list_macros.h"
 #include <cmath>
+#include "Utils.h"
 
 namespace a2a
 {
@@ -62,7 +63,7 @@ void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::Laser
 	windowedScan.intensities.resize(windowSize);
 
 	// constrain lastWindowMinAngle to be in the interval [inputScan.angle_min, inputScan.angle_min + 2 * pi)
-	auto windowMinAngle = constrainAngle(lastWindowMinAngle, inputScan.angle_min);
+	auto windowMinAngle = utils::constrainAngle(lastWindowMinAngle, inputScan.angle_min);
 	auto windowMinIndex = std::size_t(std::round((windowMinAngle - inputScan.angle_min) / inputScan.angle_increment));
 	auto incrementsPer2Pi = std::size_t(std::round(2.0 * M_PI / inputScan.angle_increment));
 
@@ -102,14 +103,6 @@ void LaserScanMinRangeWindowFilter::computeWindowedScan(const sensor_msgs::Laser
 	windowedScan.scan_time = inputScan.scan_time;
 	windowedScan.range_min = inputScan.range_min;
 	windowedScan.range_max = inputScan.range_max;
-}
-
-double constrainAngle(double angle, double lowerBound)
-{
-	angle = std::fmod(angle - lowerBound, 2.0 * M_PI);
-	if (angle < 0)
-		angle += 2.0 * M_PI;
-	return angle + lowerBound;
 }
 
 }

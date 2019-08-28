@@ -23,6 +23,7 @@ set(SOURCE_FILES
         include/VelocityMeasuringProcess.h
         include/Common.h
         include/Csv.h
+        include/Utils.h
         src/MeasuringProcess.cpp
         src/TurningRadiusMeasuringProcess.cpp
         src/VelocityMeasuringProcess.cpp
