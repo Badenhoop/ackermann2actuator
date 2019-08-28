@@ -1,6 +1,6 @@
 turning_radius_measuring:
 
-  actuator_values: [-1.0, -0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8, 1.0]
+  actuator_values: [1.0]
 
   base_frame: "base_link"
 
@@ -14,12 +14,13 @@ turning_radius_measuring:
     - name: window_filter
       type: laser_filters/LaserScanAngularBoundsFilter
       params:
-        lower_angle: -2.967 # -170° TODO: figure this out!
-        upper_angle: 2.967 # 170° TODO: figure this out!
+        # cut rear 45°
+        lower_angle: -2.74889 # -157.5°
+        upper_angle: 2.74889 # 157.5°
     - name: min_range_window_filter
       type: laser_filters/LaserScanMinRangeWindowFilter
       params:
-        window_size: 180 # 90° angle (720 / 4 = 180)
+        window_size: 240 # 120° angle
         change_in_range_threshold: 0.3
         range_replacement_value: .inf
         intensity_replacement_value: .inf
@@ -28,9 +29,9 @@ velocity_measuring:
 
   actuator_values: [0.15]
 
-  measuring_distance: 2.0
-  acceleration_distance: 1.0
-  safety_distance: 2.0
+  acceleration_distance: 0.5
+  measuring_distance: 0.5
+  safety_distance: 0.5
 
   filter_chain:
     - name: rotation_filter
@@ -38,10 +39,10 @@ velocity_measuring:
       params:
         index: 360
     - name: window_filter
-        type: laser_filters/LaserScanAngularBoundsFilter
-        params:
-          lower_angle: -0.1745 # -10°
-          upper_angle: 0.1745 # 10°
+      type: laser_filters/LaserScanAngularBoundsFilter
+      params:
+        lower_angle: -0.1745 # -10°
+        upper_angle: 0.1745 # 10°
 #    - name: array_filter
 #        type: laser_filters/LaserArrayFilter
 #        params:
