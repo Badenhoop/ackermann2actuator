@@ -1,4 +1,22 @@
-filter_chain:
+rotating_minimum:
+  - name: min_range_window_filter
+    type: laser_filters/LaserScanMinRangeWindowFilter
+    params:
+      window_size: 3
+      change_in_range_threshold: 100.0
+      range_replacement_value: .inf
+      intensity_replacement_value: .inf
+
+non_360_scan:
+  - name: min_range_window_filter
+    type: laser_filters/LaserScanMinRangeWindowFilter
+    params:
+      window_size: 5
+      change_in_range_threshold: 100.0
+      range_replacement_value: .inf
+      intensity_replacement_value: .inf
+
+exceed_change_in_range_threshold:
   - name: min_range_window_filter
     type: laser_filters/LaserScanMinRangeWindowFilter
     params:

@@ -11,6 +11,7 @@
 #include <chrono>
 
 constexpr double EPSILON = 0.0001;
+constexpr float inf = std::numeric_limits<float>::infinity();
 
 sensor_msgs::LaserScan generateScan(float minAngle,
 									float maxAngle,
@@ -24,7 +25,7 @@ sensor_msgs::LaserScan generateScan(float minAngle,
 	scan.header.frame_id = "laser";
 	scan.angle_min = minAngle;
 	scan.angle_max = maxAngle;
-	scan.angle_increment = (maxAngle - minAngle) / numSamples;
+	scan.angle_increment = (maxAngle - minAngle) / (numSamples - 1);
 	scan.time_increment = 0.01;
 	scan.scan_time = 0.1;
 	scan.range_min = 0.0;
@@ -36,7 +37,7 @@ sensor_msgs::LaserScan generateScan(float minAngle,
 		scan.ranges[i] = otherRange;
 		scan.intensities[i] = 1.0;
 	}
-	auto minRangeIndex = std::size_t((minRangeAngle - minAngle) / scan.angle_increment);
+	auto minRangeIndex = std::size_t(std::round((minRangeAngle - minAngle) / scan.angle_increment));
 	scan.ranges[minRangeIndex] = minRange;
 	return scan;
 }
@@ -49,6 +50,13 @@ double rad2deg(double rad)
 double deg2rad(double deg)
 {
 	return deg * (M_PI / 180.0);
+}
+
+void compareFloats(float f1, float f2)
+{
+	// in case both are inf: do nothing which is success
+	if (!std::isinf(f1) || !std::isinf(f2))
+		EXPECT_NEAR(f1, f2, EPSILON);
 }
 
 void compareScans(const sensor_msgs::LaserScan & scan1, const sensor_msgs::LaserScan & scan2)
@@ -64,9 +72,9 @@ void compareScans(const sensor_msgs::LaserScan & scan1, const sensor_msgs::Laser
 	EXPECT_EQ(scan1.ranges.size(), scan2.ranges.size());
 	EXPECT_EQ(scan1.intensities.size(), scan2.intensities.size());
 	for (std::size_t i = 0; i < scan1.ranges.size(); ++i)
-		EXPECT_NEAR(scan1.ranges[i], scan2.ranges[i], EPSILON);
+		compareFloats(scan1.ranges[i], scan2.ranges[i]);
 	for (std::size_t i = 0; i < scan1.intensities.size(); ++i)
-		EXPECT_NEAR(scan1.intensities[i], scan2.intensities[i], EPSILON);
+		compareFloats(scan1.intensities[i], scan2.intensities[i]);
 }
 
 void printScan(const sensor_msgs::LaserScan & scan, std::ostream & stream)
@@ -103,21 +111,23 @@ void printScan(const sensor_msgs::LaserScan & scan, std::ostream & stream)
 	stream << "]\n\n";
 }
 
-TEST(MinRangeWindowFilter, fixedMinimum)
+TEST(MinRangeWindowFilter, rotatingMinimum)
 {
 	filters::FilterChain<sensor_msgs::LaserScan> filterChain("sensor_msgs::LaserScan");
-	filterChain.configure("filter_chain");
+	filterChain.configure("rotating_minimum");
 
-	auto inputScan = generateScan(0, deg2rad(360), 10, deg2rad(180), 1, 2);
+	sensor_msgs::LaserScan inputScan;
 	sensor_msgs::LaserScan filteredScan;
+	sensor_msgs::LaserScan shouldScan;
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(180), 1, 2);
 	filterChain.update(inputScan, filteredScan);
 
-	sensor_msgs::LaserScan shouldScan;
-	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
 	shouldScan.header.frame_id = inputScan.header.frame_id;
-	shouldScan.angle_min = deg2rad(144);
-	shouldScan.angle_max = deg2rad(216);
-	shouldScan.angle_increment = deg2rad(36);
+	shouldScan.angle_min = deg2rad(135);
+	shouldScan.angle_max = deg2rad(225);
+	shouldScan.angle_increment = deg2rad(45);
 	shouldScan.time_increment = inputScan.time_increment;
 	shouldScan.scan_time = inputScan.scan_time;
 	shouldScan.range_min = inputScan.range_min;
@@ -126,16 +136,170 @@ TEST(MinRangeWindowFilter, fixedMinimum)
 	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
 
 	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(225), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(135);
+	shouldScan.angle_max = deg2rad(225);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 2.f, 1.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(270), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(180);
+	shouldScan.angle_max = deg2rad(270);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 2.f, 1.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
 }
 
-TEST(MinRangeWindowFilter, rotatingMinimum)
+TEST(MinRangeWindowFilter, non360Scan)
 {
+	filters::FilterChain<sensor_msgs::LaserScan> filterChain("sensor_msgs::LaserScan");
+	filterChain.configure("non_360_scan");
 
+	sensor_msgs::LaserScan inputScan;
+	sensor_msgs::LaserScan filteredScan;
+	sensor_msgs::LaserScan shouldScan;
+
+	inputScan = generateScan(deg2rad(0), deg2rad(270), 7, deg2rad(270), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(180);
+	shouldScan.angle_max = deg2rad(360);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 2.f, 1.f, inf, 2.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f, inf, 1.f};
+
+	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(270), 7, deg2rad(0), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(180);
+	shouldScan.angle_max = deg2rad(360);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 2.f, 2.f, inf, 1.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f, inf, 1.f};
+
+	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(270), 7, deg2rad(45), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{6 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(270);
+	shouldScan.angle_max = deg2rad(450);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, inf, 2.f, 1.f, 2.f};
+	shouldScan.intensities = std::vector<float>{1.f, inf, 1.f, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
 }
 
-TEST(MinRangeWindowFilter, exceedThreshold)
+TEST(MinRangeWindowFilter, exceedChangeInRangeThreshold)
 {
+	filters::FilterChain<sensor_msgs::LaserScan> filterChain("sensor_msgs::LaserScan");
+	filterChain.configure("exceed_change_in_range_threshold");
 
+	sensor_msgs::LaserScan inputScan;
+	sensor_msgs::LaserScan filteredScan;
+	sensor_msgs::LaserScan shouldScan;
+
+	std::ofstream f{"/home/philipp/tmp/out.txt"};
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(180), 3, 4);
+	filterChain.update(inputScan, filteredScan);
+	printScan(filteredScan, f);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(135);
+	shouldScan.angle_max = deg2rad(225);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{4.f, 3.f, 4.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(135), 1, 4);
+	// range change from 180° with range=3.0 to 135° with range=1.0 exceeds threshold of 1.0
+	// new valid minimum is set at 235° with range=2.0
+	inputScan.ranges[5] = 2.0;
+	filterChain.update(inputScan, filteredScan);
+	printScan(filteredScan, f);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{3 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(135);
+	shouldScan.angle_max = deg2rad(225);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{inf, 4.f, 2.f};
+	shouldScan.intensities = std::vector<float>{inf, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
+
+	inputScan = generateScan(deg2rad(0), deg2rad(315), 8, deg2rad(270), 1, 2);
+	filterChain.update(inputScan, filteredScan);
+	printScan(filteredScan, f);
+
+	shouldScan.header.stamp = inputScan.header.stamp + ros::Duration{4 * inputScan.time_increment};
+	shouldScan.header.frame_id = inputScan.header.frame_id;
+	shouldScan.angle_min = deg2rad(180);
+	shouldScan.angle_max = deg2rad(270);
+	shouldScan.angle_increment = deg2rad(45);
+	shouldScan.time_increment = inputScan.time_increment;
+	shouldScan.scan_time = inputScan.scan_time;
+	shouldScan.range_min = inputScan.range_min;
+	shouldScan.range_max = inputScan.range_max;
+	shouldScan.ranges = std::vector<float>{2.f, 2.f, 1.f};
+	shouldScan.intensities = std::vector<float>{1.f, 1.f, 1.f};
+
+	compareScans(filteredScan, shouldScan);
 }
 
 int main(int argc, char ** argv)

@@ -11,6 +11,8 @@ const float TurningRadiusMeasuringProcess::DISTANCE_EPSILON = 0.1;
 
 void TurningRadiusMeasuringProcess::startMeasuring(float actuatorValue)
 {
+	MeasuringProcess::startMeasuring(actuatorValue);
+
 	ros::param::get(paramNamespace + "/velocity_actuator_value", velocityActuatorValue);
 	ROS_DEBUG_STREAM("velocity actuator value: " << velocityActuatorValue);
 

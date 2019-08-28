@@ -19,7 +19,6 @@ MeasuringProcess::MeasuringProcess(std::string paramNamespace)
 	velocityActuatorPublisher = nh.advertise<std_msgs::Float64>("velocity_actuator", 1);
 	steeringActuatorPublisher = nh.advertise<std_msgs::Float64>("steering_actuator", 1);
 	laserScanSubscriber = nh.subscribe("scan", 10, &MeasuringProcess::laserScanCallback, this);
-	filterChain.configure(this->paramNamespace + "/filter_chain");
 }
 
 void MeasuringProcess::run()
@@ -172,6 +171,11 @@ float MeasuringProcess::getDistanceFromScan(const sensor_msgs::LaserScan & scan)
 		throw BadMeasuringException{"Scanned distance: infinity."};
 	}
 	return distance;
+}
+
+void MeasuringProcess::startMeasuring(float actuatorValue)
+{
+	filterChain.configure(this->paramNamespace + "/filter_chain");
 }
 
 void MeasuringProcess::finishMeasuring(float result)
