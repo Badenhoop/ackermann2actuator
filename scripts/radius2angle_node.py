@@ -37,9 +37,20 @@ def radius2angle():
 
     df = pd.read_csv(input_filename)
     actuator_value = df['actuator_value'].values.astype(np.float64)
-    turn_radius = df['measurement'].values.astype(np.float64)
+    turning_radius = df['measurement'].values.astype(np.float64)
 
-    steering_angle = turn_radius # TODO: compute this!
+    x = abs(trans.transform.translation.x)
+    y = trans.transform.translation.y
+
+    if (np.any(turning_radius < x)):
+        rospy.logerr('turning radius must be greater than x-displacement between base and laser frame')
+        return
+    
+    turning_radius = np.sqrt(np.square(turning_radius) - np.square(x))
+    # Considering y displacement depending on the direction of the turn.
+    # Positive actuator values indicate left turns while negative actuator values indicate right turns.
+    turning_radius = turning_radius - np.sign(actuator_value) * y
+    steering_angle = np.arctan(wheel_base / turning_radius)
 
     df = pd.DataFrame.from_dict({'actuator_value': actuator_value, 'measurement': steering_angle})
     df.to_csv(output_filename, sep=',', index=False)
